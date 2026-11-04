@@ -1,9 +1,5 @@
 ## CMPF
 
-遥感图像指代分割（Referring Image Segmentation）研究代码。当前唯一保留的架构为 **CMPF**
-（代码中的 `Coupled` + `GatedScaleAdaptiveHead` 路径）：多尺度跨模态交互 → 空间过滤 →
-门控解码的渐进过滤结构。原 DDPA 双路文本基线已于 2026-11-04 清理，仅保留历史指标。
-
 ## 环境
 
 ```bash
