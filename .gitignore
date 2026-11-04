@@ -1,0 +1,28 @@
+# 数据（55 GB）
+refer/
+
+# 权重（26 GB）
+saved_models/
+
+# 预训练模型
+bert-base-uncased/
+
+# 日志与导出图
+logs/
+paper_visuals/
+test_sample/
+
+# 本地记忆与文档
+.Agent/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.ipynb_checkpoints/
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
