@@ -8,6 +8,7 @@ import argparse
 import json
 import os
 import re
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +19,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from model.coupled_gated_decoder_model import CoupledGatedDecoderModel
 from train import get_dataset, get_transform

@@ -27,3 +27,6 @@ __pycache__/
 .vscode/
 .idea/
 *.swp
+
+# docker 打包相关（整个目录忽略）
+docker/

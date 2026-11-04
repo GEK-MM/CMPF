@@ -25,7 +25,6 @@ Lab2/
 ├── train.py                  # 训练入口（CMPF），支持 model_factory 供消融复用
 ├── test.py                   # 评测入口（仅 CMPF）
 ├── train.sh / test.sh        # 常用命令
-├── visualize_rf_progression.py  # RF 逐尺度热力图导出
 ├── model/                    # CMPF 模型实现（7 个文件）
 │   ├── model.py              # 基类 Model、ScaleAdaptiveHead、GatedFusionBlock
 │   ├── modules.py            # Co_Attention / ASPP / GroupASPP / GatedInjection / GLU
@@ -41,9 +40,9 @@ Lab2/
 │   ├── run_fusion_ablations_rrsisd.sh
 │   ├── train_coupled_upsample_concat.sh
 │   └── model/
-├── dataset/                  # dataloader（ReferDataset / SegmentationDataset）
+├── dataset/                  # dataloader（ReferDataset / SegmentationDataset）+ transforms.py
 ├── engine/                   # 训练/验证循环、损失
-├── utils/                    # checkpoint、logger、指标
+├── utils/                    # checkpoint、logger、指标、可视化（visualize_rf_progression.py）
 ├── refer/                    # 数据根目录
 ├── saved_models/             # 权重
 ├── logs/                     # 训练/评测日志
@@ -149,7 +148,7 @@ python ablation/train_fusion_ablation.py --ablation-target encoder --fusion-stra
 ## 可视化
 
 ```bash
-python visualize_rf_progression.py \
+python utils/visualize_rf_progression.py \
   --weights saved_models/couple_decoder/co_de_rrsisd_best.pth \
   --output-dir paper_visuals/rf_progression \
   --dataset rrsisd --data-root ./refer \

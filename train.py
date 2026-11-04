@@ -17,7 +17,7 @@ import torch.utils.data.distributed
 from torch.cuda.amp import GradScaler
 from torch.utils.data import DataLoader
 
-import transforms as T
+from dataset import transforms as T
 from dataset.data_loader import ReferDataset, SegmentationDataset
 from engine.engine import train_epoch, validate_epoch
 from model.generate_coupled_gated_decoder_model import prepare_coupled_gated_decoder_model
