@@ -1,5 +1,6 @@
-# 数据（55 GB）
-refer/
+# 数据（55 GB），仅保留 REFER API
+refer/*
+!refer/refer.py
 
 # 权重（26 GB）
 saved_models/
