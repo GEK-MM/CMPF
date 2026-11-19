@@ -1,0 +1,36 @@
+# 数据（55 GB），仅保留 REFER API
+refer/*
+!refer/refer.py
+
+# 权重（26 GB）
+saved_models/
+
+# 预训练模型
+bert-base-uncased/
+
+# 日志与导出图
+logs/
+paper_visuals/
+test_sample/
+
+# 消融实验（本地）
+ablation/
+
+# 本地记忆与文档
+.Agent/
+.claude/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.ipynb_checkpoints/
+
+# 编辑器
+.vscode/
+.idea/
+*.swp
+
+# docker 打包相关（整个目录忽略）
+docker/
