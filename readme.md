@@ -1,8 +1,5 @@
 ## CMPF
-
-遥感图像指代分割（Referring Remote Sensing Image Segmentation）方法实现。CMPF 将指代分割
-建模为逐级的跨模态过滤：编码端决定哪些文本相关响应被传递到下一尺度，解码端决定各尺度保留
-多少空间细节。
+CMPF的代码库
 
 ## 环境
 
