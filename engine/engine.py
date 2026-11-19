@@ -170,8 +170,8 @@ def compute_batch_iou(pred, gt):
     # 但在指代分割中，通常建议设为 0 或极小值 eps
     ious = intersection / (union + 1e-6)
 
-    # 返回交集总和、并集总和以及每个样本的 iou
-    return intersection.sum().item(), union.sum().item(), ious
+    # 返回交集总和、并集总和、每个样本的 iou，以及每个样本的交集/并集
+    return intersection.sum().item(), union.sum().item(), ious, intersection, union
 
 
 # def visualize_all_scales_grid(original_img, gt_mask, pred_mask, g_list, iou_value, save_dir, raw):
@@ -533,6 +533,19 @@ def validate_epoch(args, val_loader, model, logger, mode='val', val_epoch=99):
     prec_thresholds = [0.5, 0.6, 0.7, 0.8, 0.9]
     prec_meters = {t: AverageMeter() for t in prec_thresholds}
 
+    # 按指代表达式长度分桶统计，长度取解码后的单词数
+    length_bins = [(3, 5), (6, 9), (10, 20)]
+    length_stats = {
+        f'[{lo},{hi}]': {
+            'count': 0,
+            'inter': 0.0,
+            'union': 0.0,
+            'miou': AverageMeter(),
+            'prec': {t: AverageMeter() for t in prec_thresholds},
+        }
+        for lo, hi in length_bins
+    }
+
     model.eval()
     end = time.time()
     save_good = 5
@@ -558,7 +571,7 @@ def validate_epoch(args, val_loader, model, logger, mode='val', val_epoch=99):
             for j in range(num_descs):
                 # 模型前向传播
                 mask_out, g = model(imgs, word_id[:, :, :, j], mask[:, :, :, j])
-                batch_inter_sum, batch_union_sum, ious = compute_batch_iou(mask_out, seg_map)
+                batch_inter_sum, batch_union_sum, ious, intersections, unions = compute_batch_iou(mask_out, seg_map)
                 total_inter += batch_inter_sum
                 total_union += batch_union_sum
                 miou_meter.update(ious.mean().item(), imgs.size(0))
@@ -566,6 +579,21 @@ def validate_epoch(args, val_loader, model, logger, mode='val', val_epoch=99):
                 for t in prec_thresholds:
                     p_at_t = (ious > t).float().mean().item()
                     prec_meters[t].update(p_at_t, imgs.size(0))
+                # 按表达式长度累加指标
+                for k in range(imgs.size(0)):
+                    query_len = len(word_ids_to_string(word_id[k, :, :, j].tolist(), tokenizer).split())
+                    bucket_key = next(
+                        (f'[{lo},{hi}]' for lo, hi in length_bins if lo <= query_len <= hi),
+                        f'[{length_bins[-1][0]},{length_bins[-1][1]}]',
+                    )
+                    bucket = length_stats[bucket_key]
+                    sample_iou = ious[k].item()
+                    bucket['count'] += 1
+                    bucket['inter'] += intersections[k].item()
+                    bucket['union'] += unions[k].item()
+                    bucket['miou'].update(sample_iou, 1)
+                    for t in prec_thresholds:
+                        bucket['prec'][t].update(1.0 if sample_iou > t else 0.0, 1)
                 if visualize and good_cnt + bad_cnt < 150:
                     for k in range(imgs.size(0)):
                         if ious[k] < 0.3 and bad_cnt < save_bad:
@@ -611,6 +639,24 @@ def validate_epoch(args, val_loader, model, logger, mode='val', val_epoch=99):
         logger.info(f"Pr@{int(t * 100)}: {final_prec[t]:.4f}")
     logger.info("=" * 30)
 
+    # 按表达式长度分组报告
+    logger.info("LENGTH BUCKET RESULTS (word count of expression):")
+    for lo, hi in length_bins:
+        stats = length_stats[f'[{lo},{hi}]']
+        if stats['count'] == 0:
+            logger.info(f"[{lo},{hi}] words | count=0 | no samples")
+            continue
+        bucket_miou = stats['miou'].avg
+        bucket_oiou = stats['inter'] / (stats['union'] + 1e-6)
+        bucket_prec = " ".join(
+            f"Pr@{int(t * 100)}={stats['prec'][t].avg:.4f}" for t in prec_thresholds
+        )
+        logger.info(
+            f"[{lo},{hi}] words | count={stats['count']} | "
+            f"mIoU={bucket_miou:.4f} | oIoU={bucket_oiou:.4f} | {bucket_prec}"
+        )
+    logger.info("=" * 30)
+
     return final_miou, final_oiou, final_prec
 
 
@@ -649,7 +695,7 @@ def train_epoch(rank, args, train_loader, model, optimizer, epoch, scaler, logge
 
             # 3. 计算训练 IoU (使用新版函数，解包三个值)
             # 训练阶段主要关注 mIoU 作为趋势参考
-            _, _, ious = compute_batch_iou(mask_out, seg_map)
+            _, _, ious, _, _ = compute_batch_iou(mask_out, seg_map)
             current_miou = ious.mean().item()
 
         # 4. 反向传播与优化
