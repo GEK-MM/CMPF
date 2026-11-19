@@ -32,13 +32,6 @@ pip install -r requirements.txt
 │   ├── cmpf_gated_model.py   # CMPFGatedModel（CMPF 本体）
 │   ├── cmpf_decoder.py       # CMPFGatedHead
 │   └── build_cmpf_model.py   # 模型构建、权重加载、DDP 与优化器分组
-├── ablation/                 # 消融实验入口、模型与批量命令
-│   ├── train_fusion_ablation.py            # 编码器/解码器融合策略消融
-│   ├── train_coupled_upsample_concat.py    # 上采样拼接消融
-│   ├── test_coupled_upsample_concat.py     # 上采样拼接变体评测
-│   ├── run_fusion_ablations_rrsisd.sh
-│   ├── train_coupled_upsample_concat.sh
-│   └── model/
 ├── dataset/                  # dataloader（ReferDataset / SegmentationDataset）+ transforms.py
 ├── engine/                   # 训练/验证循环、损失
 ├── utils/                    # checkpoint、logger、指标、可视化
