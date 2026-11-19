@@ -1,13 +1,13 @@
 """带渐进空间门控的多尺度解码器。
 
-保留原 ``ScaleAdaptiveHead`` 的特征投影、逐尺度融合与分类头，只在由深到浅
-完成每一级融合后施加一次空间门控。该文件独立存在，不改变原解码器。
+复用 ``ScaleAdaptiveHead`` 的特征投影、逐尺度融合与分类头，
+在由深到浅的每级融合完成后施加一次空间门控。
 """
 
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model.model import GatedFusionBlock
+from model.base_model import GatedFusionBlock
 
 
 # ===========================================
@@ -41,14 +41,14 @@ class DecoderSpatialGate(nn.Module):
 #      自底向上的门控多尺度解码器
 # ===========================================
 
-class GatedScaleAdaptiveHead(nn.Module):
+class CMPFGatedHead(nn.Module):
     """在每次尺度融合后使用空间门控的解码器。
 
     Args:
         in_channels: 四个输入尺度的通道数，顺序由高分辨率到低分辨率。
         embedding_dim: 统一的解码通道数。
         target_size: 最终掩码尺寸。
-        dropout: 与原解码器保持一致的投影和分类 Dropout。
+        dropout: 投影层与分类头的 Dropout 概率。
         gate_dropout: 空间门控内部的 Dropout 概率。
     """
 

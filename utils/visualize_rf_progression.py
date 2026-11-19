@@ -22,7 +22,7 @@ from torch.utils.data import DataLoader
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from model.coupled_gated_decoder_model import CoupledGatedDecoderModel
+from model.cmpf_gated_model import CMPFGatedModel
 from train import get_dataset, get_transform
 
 
@@ -70,7 +70,7 @@ def build_dataset_args(args):
 
 def load_model(args, device):
     """严格加载当前 CMA–RF–SFI + RSF 架构的训练权重。"""
-    model = CoupledGatedDecoderModel(
+    model = CMPFGatedModel(
         tunelang=True,
         num_query=args.num_query,
         img_size=args.img_size,

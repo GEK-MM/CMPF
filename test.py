@@ -29,7 +29,7 @@ from utils.parsing_metrics import *
 from utils.utils import *
 from utils.checkpoint import load_resume
 from utils.logger import setup_logger
-from model.generate_coupled_gated_decoder_model import prepare_coupled_gated_decoder_model
+from model.build_cmpf_model import prepare_cmpf_model
 from engine.length_eval import validate_epoch_by_length_bins
 
 def get_args():
@@ -133,7 +133,7 @@ def run(rank, n_gpus, args):
     logger.info(str(args))
 
     ## Model
-    model, optimizer = prepare_coupled_gated_decoder_model(args, rank, logger)
+    model, optimizer = prepare_cmpf_model(args, rank, logger)
 
     args.start_epoch = 0
     if args.resume:

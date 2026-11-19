@@ -1,14 +1,14 @@
-"""完整表达式的单路径耦合对照模型。
+"""CMPF 主干的单路径渐进跨模态对齐实现。
 
-模型复用基类 ``Model`` 的 Swin、BERT、解码器与损失接口，仅将语义/空间双路交互
-替换为完整表达式驱动的单条渐进路径。
+模型复用基类 ``Model`` 的 Swin、BERT、解码器与损失接口
+渐进路径完成多尺度视觉—语言交互。
 """
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model.model import Model
+from model.base_model import Model
 from model.modules import ASPP, Co_Attention, GatedInjection
 
 
@@ -16,8 +16,8 @@ from model.modules import ASPP, Co_Attention, GatedInjection
 #      单路径渐进跨模态对齐主干
 # ===========================================
 
-class CoupledMainBranch(nn.Module):
-    """以完整表达式驱动的多尺度视觉—语言对齐路径。"""
+class CMPFMainBranch(nn.Module):
+    """多尺度视觉—语言对齐路径。"""
 
     def __init__(
         self,
@@ -38,7 +38,7 @@ class CoupledMainBranch(nn.Module):
             nn.GroupNorm(32, img_dims[3]),
         ])
 
-        # S3 与 S2 各保留两次串行交互，使交互深度与 DDPA 接近。
+        # S3 与 S2 各进行两次串行交互。
         self.s3_interact_1 = Co_Attention(
             img_dims[3], text_dim, n_heads, img_sizes[3], img_sizes[3],
             use_self_attn=True, use_aspp=True, use_group_aspp=True, groups=4,
@@ -122,11 +122,11 @@ class CoupledMainBranch(nn.Module):
 
 
 # ===========================================
-#      完整表达式对照模型
+#      CMPF 模型
 # ===========================================
 
-class CoupledModel(Model):
-    """复用基类视觉/文本编码器与解码器的完整表达式耦合对照模型。"""
+class CMPFModel(Model):
+    """复用基类视觉/文本编码器与解码器，注入 ``CMPFMainBranch``。"""
 
     def __init__(self, tunelang=False, num_query=20, length=17,
                  img_size=406, text_model_path='', drop=0.1, drop_act=0.0):
@@ -139,7 +139,7 @@ class CoupledModel(Model):
             drop=drop,
             drop_act=drop_act,
         )
-        self.main_branch = CoupledMainBranch(dropout=drop, dropout_act=drop_act)
+        self.main_branch = CMPFMainBranch(dropout=drop, dropout_act=drop_act)
         self._attention_handles = []
         self._captured_patch_to_token_attention = {}
 
@@ -187,7 +187,7 @@ class CoupledModel(Model):
     def _flatten_text_inputs(word_id, word_mask):
         if word_id.ndim == 3:
             if word_id.size(1) != 1:
-                raise ValueError('CoupledModel expects one full-expression text sequence per sample.')
+                raise ValueError('CMPFModel expects one full-expression text sequence per sample.')
             word_id = word_id[:, 0]
             word_mask = word_mask[:, 0]
         if word_id.ndim != 2:

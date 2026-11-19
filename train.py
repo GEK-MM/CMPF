@@ -20,7 +20,7 @@ from torch.utils.data import DataLoader
 from dataset import transforms as T
 from dataset.data_loader import ReferDataset, SegmentationDataset
 from engine.engine import train_epoch, validate_epoch
-from model.generate_coupled_gated_decoder_model import prepare_coupled_gated_decoder_model
+from model.build_cmpf_model import prepare_cmpf_model
 from utils.checkpoint import load_resume, save_checkpoint
 from utils.logger import setup_logger
 
@@ -141,7 +141,7 @@ def get_dataset(image_set, transform, args):
     return ds, 2
 
 
-def main(args, model_factory=prepare_coupled_gated_decoder_model):
+def main(args, model_factory=prepare_cmpf_model):
     os.environ['MASTER_ADDR'] = 'localhost'
     os.environ['MASTER_PORT'] = '12357'
     if not torch.cuda.is_available():
@@ -152,7 +152,7 @@ def main(args, model_factory=prepare_coupled_gated_decoder_model):
     mp.spawn(run, nprocs=n_gpus, args=(n_gpus, args, model_factory))
 
 
-def run(rank, n_gpus, args, model_factory=prepare_coupled_gated_decoder_model):
+def run(rank, n_gpus, args, model_factory=prepare_cmpf_model):
     dist.init_process_group(backend='nccl', init_method='env://', world_size=n_gpus, rank=rank)
     torch.cuda.set_device(rank)
     ## fix seed

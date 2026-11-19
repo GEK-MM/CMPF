@@ -1,17 +1,15 @@
-"""普通上采样拼接卷积消融模型的构建与优化器配置。"""
-
-import os
+"""CMPF（门控解码器）的模型与优化器构建。"""
 
 import torch
 from torch.nn.parallel import DistributedDataParallel as DDP
 
-from ablation.model.coupled_upsample_concat_model import CoupledUpsampleConcatModel
+from model.cmpf_gated_model import CMPFGatedModel
 from utils.checkpoint import load_pretrain
 
 
-def prepare_coupled_upsample_concat_model(args, rank, logger):
-    """构建独立消融模型，优化器参数分组与耦合基线保持一致。"""
-    model = CoupledUpsampleConcatModel(
+def prepare_cmpf_model(args, rank, logger):
+    """构建独立模型，参数分组与 CMPF 保持一致。"""
+    model = CMPFGatedModel(
         tunelang=args.tunelang,
         num_query=args.num_query,
         img_size=args.img_size,
@@ -20,7 +18,7 @@ def prepare_coupled_upsample_concat_model(args, rank, logger):
         drop_act=args.drop_act,
     ).cuda(rank)
 
-    if args.pretrain and os.path.isfile(args.pretrain):
+    if args.pretrain:
         model = load_pretrain(model, args, logger, rank)
 
     model = DDP(model, device_ids=[rank], find_unused_parameters=True)

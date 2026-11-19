@@ -13,8 +13,12 @@ logs/
 paper_visuals/
 test_sample/
 
+# 消融实验（本地）
+ablation/
+
 # 本地记忆与文档
 .Agent/
+.claude/
 
 # Python
 __pycache__/
