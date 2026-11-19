@@ -121,4 +121,4 @@ CMPF 评测结果：
 | RISBench | 0.6955 | 0.7002 | 0.7526 | 0.7718 | 0.6669 | 0.4034 |
 
 ## 权重文件
-将在接下来会放出
+[CMPF权重文件](https://drive.google.com/drive/folders/1hRZJbN5HRtkr3AL2y8SQGuV91Zj2j6N_?usp=drive_link)
